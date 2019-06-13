@@ -1,7 +1,9 @@
+'use strict'
+
 var fs = require('fs');
 var json = {};
 
-//console.log(index + ': ' + val);
+// console.log(index + ': ' + val);
 json.strTables = process.argv[2];
 json.takeProcedure = process.argv[3];
 json.host = process.argv[4];
@@ -63,7 +65,7 @@ function getKeys(arrTables, fieldName, arrKeys, currIndex, count, json, ignoreTa
     if (currIndex < count) {
         
         if (arrIgnoreTables.indexOf(arrTables[currIndex][fieldName]) == -1) {
-            //console.log(arrTables[currIndex][fieldName]);
+            // console.log(arrTables[currIndex][fieldName]);
             // console.log(json);
             
             var query = "select S1.INDEX_NAME as Key_name, S1.SEQ_IN_INDEX as Seq_in_index, S1.COLUMN_NAME as Column_name, S1.SUB_PART as Sub_part from (select * from information_schema.STATISTICS S where S.TABLE_SCHEMA='" + json.dbName + "' and S.TABLE_NAME='" + arrTables[currIndex][fieldName] + "') S1 ";
@@ -113,18 +115,22 @@ function getKeys(arrTables, fieldName, arrKeys, currIndex, count, json, ignoreTa
                 //createIndexQueries.push('ALTER TABLE ' + arrKeys[i].tableName + ' ADD ' + (arrKeys[i].isNonUnique == 0 ? 'UNIQUE' : '') + ' INDEX ' + arrKeys[i].key + ' (' + arrKeys[i].column + ') ;');
             }
         }
-        fs.writeFile(json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql", dropIndexQueries.join('\n'));
-        fs.writeFile(json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql", createIndexQueries.join('\n'));
+        fs.writeFile(json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql", dropIndexQueries.join('\n'), function(err, result) {
+            if(err) console.log('error', err);
+          });
+        fs.writeFile(json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql", createIndexQueries.join('\n'), function(err, result) {
+            if(err) console.log('error', err);
+          });
         
         var str = "{ ";
         
         if (parseInt(json.takeProcedure) == 1)
-            str += "mysqldump --comments --triggers --routines --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + "; ";
+            str += "mysqldump --comments --triggers --routines --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + " > " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql;";
         else
-            str += "mysqldump --comments --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + "; ";
+            str += "mysqldump --comments --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + " > " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql;";
         
         str += "cat " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql; ";
-        str += "mysqldump --extended-insert --disable-keys --flush-logs --no-autocommit --no-create-info -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + "; ";
+        str += "mysqldump --extended-insert --disable-keys --flush-logs --no-autocommit --no-create-info -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + " > " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql; ";
         str += "cat " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql; ";
         str += "}";
 
@@ -134,16 +140,15 @@ function getKeys(arrTables, fieldName, arrKeys, currIndex, count, json, ignoreTa
 
 
         // console.log(str);
-        var sys = require('sys')
         var exec = require('child_process').exec;
         function puts(error, stdout, stderr) {
-            // console.log("done");
+            console.log("done");
             process.exit();
             //   process.send("test");
 
         }
         exec(str, puts);
 
-        //res.send('Done...');
+        // res.send('Done...');
     }
 }
