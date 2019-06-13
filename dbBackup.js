@@ -115,22 +115,22 @@ function getKeys(arrTables, fieldName, arrKeys, currIndex, count, json, ignoreTa
                 //createIndexQueries.push('ALTER TABLE ' + arrKeys[i].tableName + ' ADD ' + (arrKeys[i].isNonUnique == 0 ? 'UNIQUE' : '') + ' INDEX ' + arrKeys[i].key + ' (' + arrKeys[i].column + ') ;');
             }
         }
-        fs.writeFile(json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql", dropIndexQueries.join('\n'), function(err, result) {
+        fs.writeFile(json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql", dropIndexQueries.join('\n'), function(err) {
             if(err) console.log('error', err);
           });
-        fs.writeFile(json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql", createIndexQueries.join('\n'), function(err, result) {
+        fs.writeFile(json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql", createIndexQueries.join('\n'), function(err) {
             if(err) console.log('error', err);
           });
         
         var str = "{ ";
         
         if (parseInt(json.takeProcedure) == 1)
-            str += "mysqldump --comments --triggers --routines --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + " > " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql;";
+            str += "mysqldump --comments --single-transaction --skip-lock-tables --triggers --routines --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + " >> " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql;";
         else
-            str += "mysqldump --comments --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + " > " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql;";
+            str += "mysqldump --comments --single-transaction --skip-lock-tables --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + " >> " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql;";
         
         str += "cat " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql; ";
-        str += "mysqldump --extended-insert --disable-keys --flush-logs --no-autocommit --no-create-info -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + " > " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql; ";
+        str += "mysqldump --extended-insert --disable-keys --single-transaction --skip-lock-tables --no-autocommit --no-create-info -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + " >> " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql; ";
         str += "cat " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql; ";
         str += "}";
 
