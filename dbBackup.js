@@ -115,10 +115,10 @@ function getKeys(arrTables, fieldName, arrKeys, currIndex, count, json, ignoreTa
                 //createIndexQueries.push('ALTER TABLE ' + arrKeys[i].tableName + ' ADD ' + (arrKeys[i].isNonUnique == 0 ? 'UNIQUE' : '') + ' INDEX ' + arrKeys[i].key + ' (' + arrKeys[i].column + ') ;');
             }
         }
-        fs.writeFile(json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql", dropIndexQueries.join('\n'), function(err) {
+        fs.writeFile(json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql", dropIndexQueries.join('\n'), function(err, result) {
             if(err) console.log('error', err);
           });
-        fs.writeFile(json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql", createIndexQueries.join('\n'), function(err) {
+        fs.writeFile(json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql", createIndexQueries.join('\n'), function(err, result) {
             if(err) console.log('error', err);
           });
         
