@@ -144,7 +144,7 @@ function getKeys(arrTables, fieldName, arrKeys, currIndex, count, json, ignoreTa
         function puts(error, stdout, stderr) {
             console.log("done");
             process.exit();
-            //   process.send("test");
+            ///   process.send("test");
 
         }
         exec(str, puts);
