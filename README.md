@@ -87,3 +87,10 @@ An example of the command with options filled credentials:
 ```shell
 node dbBackup.js '' 1 127.0.0.1 3306 root secretrootpassword employees '/home/paddle/backup' db_backup
 ```
+
+## `NICE TO KNOWS`
+While running through the backup/ restore process we encountered several "gotcha" moments, they included:
+* `MySQL: Access denied` - despite adding the DEFINER replacement command we were still facing Access denied errors when trying to restore our back up after a bit of digging we found that the error was caused because our SQL included information regarding `GTID`. [This](https://help.poralix.com/articles/mysql-access-denied-you-need-the-super-privilege-for-this-operation) article was very helpful in helping us debug the issue. If you do not want to redo your back up, you can run up the following command: 
+```shell
+lz4 -cd <NAME_OF_BACK_UP_FILE>.lz4| sed -E 's/SET @MYSQLDUMP_TEMP.*//g' | sed -E 's/SET @@SESSION.SQL_LOG_BIN.*//g' | sed -E 's/SET @@GLOBAL.GTID_PURGED=.*//g' | mysql -h <MYSQL_HOST> -P 3306 -u <MYSQL_USER> -p<MYSQL_PASSWORD> <DESIRED_MYSQL_DB_NAME>
+```
