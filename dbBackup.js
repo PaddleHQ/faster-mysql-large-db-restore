@@ -127,13 +127,13 @@ function getKeys(arrTables, fieldName, arrKeys, currIndex, count, json, ignoreTa
         var str = "( ";
     
         if (parseInt(json.takeProcedure) == 1)
-            str += "mysqldump --comments --single-transaction --skip-lock-tables --triggers --routines --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + removeDefiner +"; ";
+            str += "mysqldump --comments –set-gtid-purged=OFF --single-transaction --skip-lock-tables --triggers --routines --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + removeDefiner +"; ";
         else
-            str += "mysqldump --comments --single-transaction --skip-lock-tables --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + removeDefiner +"; ";
+            str += "mysqldump --comments –set-gtid-purged=OFF --single-transaction --skip-lock-tables --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + removeDefiner +"; ";
         
         str += "cat " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql" + removeDefiner + "; ";
         // Removed  --flush-logs to stop  
-        str += "mysqldump --extended-insert --single-transaction --skip-lock-tables --disable-keys --no-autocommit --no-create-info -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + removeDefiner + "; ";
+        str += "mysqldump --extended-insert –set-gtid-purged=OFF --single-transaction --skip-lock-tables --disable-keys --no-autocommit --no-create-info -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + removeDefiner + "; ";
         str += "cat " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql" + removeDefiner + "; ";
         str += ")";
 
