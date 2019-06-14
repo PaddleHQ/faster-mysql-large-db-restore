@@ -122,17 +122,20 @@ function getKeys(arrTables, fieldName, arrKeys, currIndex, count, json, ignoreTa
             if(err) console.log('error', err);
           });
         
-        var str = "{ ";
-        
+        var removeDefiner = " | sed -E 's/DEFINER=`[^`]+`@`[^`]+`/DEFINER=" + json.userName +"/g'"
+
+        var str = "( ";
+    
         if (parseInt(json.takeProcedure) == 1)
-            str += "mysqldump --comments --single-transaction --skip-lock-tables --triggers --routines --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + " >> " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql;";
+            str += "mysqldump --comments --single-transaction --skip-lock-tables --triggers --routines --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + removeDefiner +"; ";
         else
-            str += "mysqldump --comments --single-transaction --skip-lock-tables --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + " >> " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql;";
+            str += "mysqldump --comments --single-transaction --skip-lock-tables --no-data -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + removeDefiner +"; ";
         
-        str += "cat " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql; ";
-        str += "mysqldump --extended-insert --disable-keys --single-transaction --skip-lock-tables --no-autocommit --no-create-info -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + " >> " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql; ";
-        str += "cat " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql; ";
-        str += "}";
+        str += "cat " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_DROP_INDEX.sql" + removeDefiner + "; ";
+        // Removed  --flush-logs to stop  
+        str += "mysqldump --extended-insert --single-transaction --skip-lock-tables --disable-keys --no-autocommit --no-create-info -h " + json.host + " -u " + json.userName + " -p" + json.password + " " + ignoreTablesStr + " " + json.dbName + removeDefiner + "; ";
+        str += "cat " + json.target_path + "/" + json.dbName + "_" + json.fileTS + "_CREATE_INDEX.sql" + removeDefiner + "; ";
+        str += ")";
 
         //str += " | bzip2 > " + json.target_path + "/" + json.fileName + ".bz2";
         //str += " > " + json.target_path + "/" + json.fileName;
